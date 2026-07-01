@@ -231,6 +231,25 @@
       <button type="button" class="btn-primary" id="submitBtn">Submit Report</button>
     </div>
     <div class="status-msg" id="statusMsg"></div>
+
+    <button type="button" class="btn-ghost" id="weeklyBtn" style="width:100%;margin-top:18px;">📊 View This Week's Summary</button>
+  </div>
+
+  <!-- WEEKLY VIEW -->
+  <div id="weeklyView" style="display:none;">
+    <div class="summary-card">
+      <div class="summary-header">
+        <div class="check-badge" style="background:var(--navy);">📊</div>
+        <h2>Weekly Summary</h2>
+      </div>
+      <div class="summary-sub" id="weeklySub">Loading...</div>
+      <div id="weeklyPreview" style="background:#EAF2F7;border:1px solid #C9DCE8;border-radius:12px;padding:16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;color:var(--dark-teal);margin-bottom:18px;max-height:400px;overflow-y:auto;"></div>
+      <button class="wa-btn" id="sendWeeklyWaBtn">📲 Send Weekly Report to WhatsApp</button>
+      <div class="secondary-actions">
+        <button class="btn-ghost" id="copyWeeklyBtn">Copy Text</button>
+        <button class="btn-ghost" id="backFromWeeklyBtn">← Back</button>
+      </div>
+    </div>
   </div>
 
   <!-- SUMMARY / CONFIRMATION VIEW -->
@@ -259,7 +278,7 @@
 /* ============================================================
    CONFIG — replace with your deployed Apps Script Web App URL
    ============================================================ */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSGO9EmO5t7M4w4nJLhA4FBttgcTJUGt8_lo0tjzTa8DXQtELAJfwo2Q6iq-zP1ku1vw/exec";
+const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
 
 const CATEGORIES = [
   {value:"Ads", label:"📢 Ads"},
@@ -453,6 +472,58 @@ document.getElementById('newReportBtn').addEventListener('click', () => {
   rowCount = 0;
   addRow();
   document.getElementById('summaryView').style.display = 'none';
+  document.getElementById('formView').style.display = 'block';
+});
+
+/* ===================== WEEKLY SUMMARY ===================== */
+let currentWeeklyMessage = '';
+
+document.getElementById('weeklyBtn').addEventListener('click', async () => {
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('weeklyView').style.display = 'block';
+  const sub = document.getElementById('weeklySub');
+  const preview = document.getElementById('weeklyPreview');
+  sub.textContent = 'Loading...';
+  preview.textContent = '';
+
+  if(!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') !== -1){
+    sub.textContent = 'SCRIPT_URL not set yet.';
+    return;
+  }
+
+  try{
+    const res = await fetch(`${SCRIPT_URL}?action=weekly`);
+    const data = await res.json();
+    if(data.status === 'success' && data.text){
+      currentWeeklyMessage = data.text;
+      preview.textContent = data.text;
+      sub.textContent = data.total ? `${data.done}/${data.total} tasks completed this week` : 'No tasks logged this week yet';
+    }else{
+      sub.textContent = 'Could not load summary.';
+    }
+  }catch(err){
+    sub.textContent = 'Error fetching weekly summary — check SCRIPT_URL / deployment access.';
+  }
+});
+
+document.getElementById('sendWeeklyWaBtn').addEventListener('click', () => {
+  if(!currentWeeklyMessage) return;
+  const encoded = encodeURIComponent(currentWeeklyMessage);
+  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+});
+
+document.getElementById('copyWeeklyBtn').addEventListener('click', () => {
+  if(!currentWeeklyMessage) return;
+  navigator.clipboard.writeText(currentWeeklyMessage).then(() => {
+    const btn = document.getElementById('copyWeeklyBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = original, 1500);
+  });
+});
+
+document.getElementById('backFromWeeklyBtn').addEventListener('click', () => {
+  document.getElementById('weeklyView').style.display = 'none';
   document.getElementById('formView').style.display = 'block';
 });
 </script>
