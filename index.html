@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daily Work Report — Sanoof</title>
+<title>Daily Work Report</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -244,7 +244,7 @@
       </div>
       <div class="summary-sub" id="weeklySub">Loading...</div>
       <div id="weeklyPreview" style="background:#EAF2F7;border:1px solid #C9DCE8;border-radius:12px;padding:16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;color:var(--dark-teal);margin-bottom:18px;max-height:400px;overflow-y:auto;"></div>
-      <button class="wa-btn" id="sendWeeklyWaBtn">📲 Send Weekly Report to WhatsApp</button>
+      <button class="wa-btn" id="sendWeeklyWaBtn">Send Weekly Report to WhatsApp</button>
       <div class="secondary-actions">
         <button class="btn-ghost" id="copyWeeklyBtn">Copy Text</button>
         <button class="btn-ghost" id="backFromWeeklyBtn">← Back</button>
@@ -263,7 +263,7 @@
 
       <div id="whatsappPreview"></div>
 
-      <button class="wa-btn" id="sendWaBtn">📲 Send to WhatsApp Group</button>
+      <button class="wa-btn" id="sendWaBtn">Send to WhatsApp Group</button>
       <div class="secondary-actions">
         <button class="btn-ghost" id="copyBtn">Copy Text</button>
         <button class="btn-ghost" id="newReportBtn">+ New Report</button>
@@ -281,15 +281,17 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSGO9EmO5t7M4w4nJLhA4FBttgcTJUGt8_lo0tjzTa8DXQtELAJfwo2Q6iq-zP1ku1vw/exec";
 
 const CATEGORIES = [
-  {value:"Ads", label:"📢 Ads"},
-  {value:"CRM", label:"🔧 CRM"},
-  {value:"Web", label:"🌐 Web"},
-  {value:"LMS", label:"🎓 LMS"},
-  {value:"Meetings", label:"🤝 Meetings"},
-  {value:"Other", label:"📌 Other"}
+  {value:"Meta", label:"Meta"},
+  {value:"Google", label:"Google"},
+  {value:"CRM", label:"CRM"},
+  {value:"Website", label:"Website"},
+  {value:"Report", label:"Report"},
+  {value:"Planning", label:"Planning"},
+  {value:"Meetings", label:"Meetings"},
+  {value:"Other", label:"Other"}
 ];
 
-const STATUSES = ["Done", "In Progress", "Blocked"];
+const STATUSES = ["Done", "In Progress", "Cancelled"];
 
 let rowCount = 0;
 const container = document.getElementById('taskContainer');
@@ -376,7 +378,7 @@ function statusEmoji(status){
 
 function buildWhatsAppMessage(tasks){
   const dateStr = todayLabel();
-  let msg = `*📋 Daily Work Report — Sanoof*\n_${dateStr}_\n`;
+  let msg = `*Daily Work Report — Sanoof*\n_${dateStr}_\n`;
 
   const grouped = {};
   CATEGORIES.forEach(c => grouped[c.value] = []);
