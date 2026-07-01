@@ -318,7 +318,7 @@
    ============================================================ */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwSGO9EmO5t7M4w4nJLhA4FBttgcTJUGt8_lo0tjzTa8DXQtELAJfwo2Q6iq-zP1ku1vw/exec";
 
-const CATEGORIES = [
+const TASKS = [
   {value:"Daily Report", label:"Daily Report"},
   {value:"Weekly Report", label:"Weekly Report"},
   {value:"Monthly Report", label:"Monthly Report"},
@@ -354,7 +354,7 @@ function addRow(prefill){
   div.className = 'task-row';
   div.dataset.rowId = id;
 
-  const catOptions = CATEGORIES.map(c => `<option value="${c.value}">${c.label}</option>`).join('');
+  const taskOptions = TASKS.map(t => `<option value="${t.value}">${t.label}</option>`).join('');
   const statusOptions = STATUSES.map(s => `<option value="${s}">${s}</option>`).join('');
 
   div.innerHTML = `
@@ -364,17 +364,13 @@ function addRow(prefill){
     </div>
     <div class="grid2">
       <div class="field">
-        <label>Category</label>
-        <select class="f-category">${catOptions}</select>
+        <label>Task</label>
+        <select class="f-task">${taskOptions}</select>
       </div>
       <div class="field">
         <label>Status</label>
         <select class="f-status">${statusOptions}</select>
       </div>
-    </div>
-    <div class="field field-full" style="margin-bottom:10px;">
-      <label>Task / Activity</label>
-      <input type="text" class="f-task" placeholder="e.g. Reviewed UGBIP campaign CPL for last 7 days">
     </div>
     <div class="field field-full">
       <label>Notes (optional)</label>
@@ -397,12 +393,9 @@ function collectTasks(){
   const rows = container.querySelectorAll('.task-row');
   const tasks = [];
   rows.forEach(row => {
-    const task = row.querySelector('.f-task').value.trim();
-    if(!task) return; // skip empty rows
     tasks.push({
-      category: row.querySelector('.f-category').value,
+      task: row.querySelector('.f-task').value,
       status: row.querySelector('.f-status').value,
-      task: task,
       notes: row.querySelector('.f-notes').value.trim()
     });
   });
@@ -418,23 +411,11 @@ function statusLabel(status){
 
 function buildWhatsAppMessage(tasks){
   const dateStr = todayLabel();
-  let msg = `*Daily Work Report — Sanoof*\n_${dateStr}_\n`;
+  let msg = `*Daily Work Report — Sanoof*\n_${dateStr}_\n\n`;
 
-  const grouped = {};
-  CATEGORIES.forEach(c => grouped[c.value] = []);
   tasks.forEach(t => {
-    if(!grouped[t.category]) grouped[t.category] = [];
-    grouped[t.category].push(t);
-  });
-
-  CATEGORIES.forEach(cat => {
-    const items = grouped[cat.value];
-    if(!items || items.length === 0) return;
-    msg += `\n${cat.label}\n`;
-    items.forEach(t => {
-      msg += `- ${t.task} [${statusLabel(t.status)}]\n`;
-      if(t.notes) msg += `   Note: ${t.notes}\n`;
-    });
+    msg += `- ${t.task} [${statusLabel(t.status)}]\n`;
+    if(t.notes) msg += `   Note: ${t.notes}\n`;
   });
 
   const doneCount = tasks.filter(t => t.status === 'Done').length;
