@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Work Report — Sanoof</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#008BA5;
+    --dark-teal:#0E3339;
+    --navy:#2B557A;
+    --mint:#CEF3E4;
+    --peach:#FBE3DA;
+    --grey:#F6F6F6;
+    --ink:#0E3339;
+    --paper:#FFFFFF;
+    --line:#E4EDEC;
+    --danger:#C1584A;
+    --warn:#C98A2E;
+    --ok:#1E8F6F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Sora',sans-serif;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(0,139,165,0.10), transparent 45%),
+      radial-gradient(circle at 100% 20%, rgba(251,227,218,0.5), transparent 50%),
+      var(--grey);
+    color:var(--ink);
+    min-height:100vh;
+    padding:32px 16px 80px;
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    margin-bottom:28px;
+    padding-bottom:18px;
+    border-bottom:2px solid var(--dark-teal);
+  }
+  .brand-mark{
+    width:44px;height:44px;border-radius:10px;
+    background:linear-gradient(135deg,var(--teal),var(--navy));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:18px;
+    box-shadow:0 6px 16px rgba(0,139,165,0.35);
+  }
+  .title-block{display:flex;gap:14px;align-items:center;}
+  h1{font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--dark-teal);}
+  .sub{font-size:12px;color:var(--navy);font-weight:500;letter-spacing:0.03em;text-transform:uppercase;margin-top:2px;}
+  .date-chip{
+    background:var(--dark-teal);color:#fff;font-size:13px;font-weight:600;
+    padding:8px 14px;border-radius:100px;white-space:nowrap;
+  }
+
+  .card{
+    background:var(--paper);
+    border-radius:16px;
+    border:1px solid var(--line);
+    box-shadow:0 2px 10px rgba(14,51,57,0.05);
+    padding:20px;
+    margin-bottom:16px;
+  }
+
+  .task-row{
+    border-radius:12px;
+    background:var(--grey);
+    padding:16px;
+    margin-bottom:14px;
+    position:relative;
+    border-left:4px solid var(--teal);
+  }
+  .task-row .row-top{
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
+  }
+  .task-num{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.06em;}
+  .remove-btn{
+    background:none;border:none;color:var(--danger);font-size:12px;font-weight:600;cursor:pointer;
+    padding:4px 8px;border-radius:6px;
+  }
+  .remove-btn:hover{background:rgba(193,88,74,0.1);}
+
+  label{
+    display:block;font-size:11px;font-weight:700;color:var(--navy);
+    text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;
+  }
+  input[type="text"],textarea,select,input[type="number"]{
+    width:100%;
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:8px;
+    padding:10px 12px;
+    font-family:'Sora',sans-serif;
+    font-size:14px;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s;
+  }
+  input:focus,textarea:focus,select:focus{border-color:var(--teal);}
+  textarea{resize:vertical;min-height:44px;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .grid3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+  .field{margin-bottom:0;}
+  .field-full{grid-column:1 / -1;}
+
+  @media (max-width:520px){
+    .grid3{grid-template-columns:1fr;}
+    .grid2{grid-template-columns:1fr;}
+  }
+
+  .add-row-btn{
+    width:100%;
+    background:#fff;
+    border:2px dashed var(--teal);
+    color:var(--teal);
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    padding:14px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:background .15s;
+  }
+  .add-row-btn:hover{background:var(--mint);}
+
+  .actions{display:flex;gap:12px;margin-top:20px;}
+  .btn-primary{
+    flex:1;
+    background:var(--dark-teal);
+    color:#fff;
+    border:none;
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    padding:15px;
+    border-radius:10px;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(14,51,57,0.25);
+    transition:transform .1s, background .15s;
+  }
+  .btn-primary:hover{background:var(--teal);transform:translateY(-1px);}
+  .btn-primary:disabled{background:#B7C4C6;cursor:not-allowed;transform:none;box-shadow:none;}
+
+  .status-msg{
+    text-align:center;font-size:13px;font-weight:600;margin-top:10px;color:var(--navy);
+    min-height:18px;
+  }
+
+  /* Summary / confirmation view */
+  #summaryView{display:none;}
+  .summary-card{
+    background:var(--paper);
+    border-radius:16px;
+    border:1px solid var(--line);
+    padding:24px;
+    box-shadow:0 4px 20px rgba(14,51,57,0.08);
+  }
+  .summary-header{
+    display:flex;align-items:center;gap:10px;margin-bottom:4px;
+  }
+  .check-badge{
+    width:32px;height:32px;border-radius:50%;background:var(--ok);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:800;
+  }
+  .summary-header h2{font-size:18px;color:var(--dark-teal);}
+  .summary-sub{font-size:12px;color:var(--navy);margin-bottom:18px;margin-left:42px;}
+
+  #whatsappPreview{
+    background:#E9F8F0;
+    border:1px solid #BFE8D3;
+    border-radius:12px;
+    padding:16px;
+    font-size:13.5px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    color:var(--dark-teal);
+    font-family:'Sora',sans-serif;
+    margin-bottom:18px;
+    max-height:340px;
+    overflow-y:auto;
+  }
+
+  .wa-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;background:#25D366;color:#fff;border:none;
+    font-family:'Sora',sans-serif;font-weight:700;font-size:15px;
+    padding:15px;border-radius:10px;cursor:pointer;margin-bottom:10px;
+    box-shadow:0 6px 18px rgba(37,211,102,0.3);
+    transition:transform .1s;
+  }
+  .wa-btn:hover{transform:translateY(-1px);}
+
+  .secondary-actions{display:flex;gap:10px;}
+  .btn-ghost{
+    flex:1;background:#fff;border:1.5px solid var(--line);color:var(--navy);
+    font-family:'Sora',sans-serif;font-weight:600;font-size:13px;
+    padding:11px;border-radius:8px;cursor:pointer;
+  }
+  .btn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+
+  footer{
+    text-align:center;font-size:11px;color:#8CA3A6;margin-top:30px;letter-spacing:0.02em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title-block">
+      <div class="brand-mark">A</div>
+      <div>
+        <h1>Daily Work Report</h1>
+        <div class="sub">AIMER Business School</div>
+      </div>
+    </div>
+    <div class="date-chip" id="dateChip">—</div>
+  </header>
+
+  <!-- FORM VIEW -->
+  <div id="formView">
+    <div id="taskContainer"></div>
+
+    <button type="button" class="add-row-btn" id="addRowBtn">+ Add Task</button>
+
+    <div class="actions">
+      <button type="button" class="btn-primary" id="submitBtn">Submit Report</button>
+    </div>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <!-- SUMMARY / CONFIRMATION VIEW -->
+  <div id="summaryView">
+    <div class="summary-card">
+      <div class="summary-header">
+        <div class="check-badge">✓</div>
+        <h2>Report Saved</h2>
+      </div>
+      <div class="summary-sub" id="savedSub">Logged to Google Sheet</div>
+
+      <div id="whatsappPreview"></div>
+
+      <button class="wa-btn" id="sendWaBtn">📲 Send to WhatsApp Group</button>
+      <div class="secondary-actions">
+        <button class="btn-ghost" id="copyBtn">Copy Text</button>
+        <button class="btn-ghost" id="newReportBtn">+ New Report</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>Daily activity log · synced to Google Sheets</footer>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG — replace with your deployed Apps Script Web App URL
+   ============================================================ */
+const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+const CATEGORIES = [
+  {value:"Ads", label:"📢 Ads"},
+  {value:"CRM", label:"🔧 CRM"},
+  {value:"Web", label:"🌐 Web"},
+  {value:"LMS", label:"🎓 LMS"},
+  {value:"Meetings", label:"🤝 Meetings"},
+  {value:"Other", label:"📌 Other"}
+];
+
+const STATUSES = ["Done", "In Progress", "Blocked"];
+
+let rowCount = 0;
+const container = document.getElementById('taskContainer');
+
+function todayLabel(){
+  const d = new Date();
+  return d.toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+}
+document.getElementById('dateChip').textContent = todayLabel();
+
+function addRow(prefill){
+  rowCount++;
+  const id = rowCount;
+  const div = document.createElement('div');
+  div.className = 'task-row';
+  div.dataset.rowId = id;
+
+  const catOptions = CATEGORIES.map(c => `<option value="${c.value}">${c.label}</option>`).join('');
+  const statusOptions = STATUSES.map(s => `<option value="${s}">${s}</option>`).join('');
+
+  div.innerHTML = `
+    <div class="row-top">
+      <span class="task-num">Task ${id}</span>
+      <button type="button" class="remove-btn" onclick="removeRow(${id})">Remove</button>
+    </div>
+    <div class="grid3">
+      <div class="field">
+        <label>Category</label>
+        <select class="f-category">${catOptions}</select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select class="f-status">${statusOptions}</select>
+      </div>
+      <div class="field">
+        <label>Time Spent</label>
+        <input type="text" class="f-time" placeholder="e.g. 1.5h">
+      </div>
+    </div>
+    <div class="field field-full" style="margin-bottom:10px;">
+      <label>Task / Activity</label>
+      <input type="text" class="f-task" placeholder="e.g. Reviewed UGBIP campaign CPL for last 7 days">
+    </div>
+    <div class="field field-full">
+      <label>Notes (optional)</label>
+      <textarea class="f-notes" placeholder="Any extra detail..."></textarea>
+    </div>
+  `;
+  container.appendChild(div);
+}
+
+function removeRow(id){
+  const row = container.querySelector(`[data-row-id="${id}"]`);
+  if(row) row.remove();
+  if(container.children.length === 0) addRow();
+}
+
+document.getElementById('addRowBtn').addEventListener('click', () => addRow());
+addRow(); // start with one row
+
+function collectTasks(){
+  const rows = container.querySelectorAll('.task-row');
+  const tasks = [];
+  rows.forEach(row => {
+    const task = row.querySelector('.f-task').value.trim();
+    if(!task) return; // skip empty rows
+    tasks.push({
+      category: row.querySelector('.f-category').value,
+      status: row.querySelector('.f-status').value,
+      time: row.querySelector('.f-time').value.trim(),
+      task: task,
+      notes: row.querySelector('.f-notes').value.trim()
+    });
+  });
+  return tasks;
+}
+
+function statusEmoji(status){
+  if(status === 'Done') return '✅';
+  if(status === 'In Progress') return '🔄';
+  if(status === 'Blocked') return '⛔';
+  return '•';
+}
+
+function buildWhatsAppMessage(tasks){
+  const dateStr = todayLabel();
+  let msg = `*📋 Daily Work Report — Sanoof*\n_${dateStr}_\n`;
+
+  const grouped = {};
+  CATEGORIES.forEach(c => grouped[c.value] = []);
+  tasks.forEach(t => {
+    if(!grouped[t.category]) grouped[t.category] = [];
+    grouped[t.category].push(t);
+  });
+
+  CATEGORIES.forEach(cat => {
+    const items = grouped[cat.value];
+    if(!items || items.length === 0) return;
+    msg += `\n${cat.label}\n`;
+    items.forEach(t => {
+      const timePart = t.time ? ` _(${t.time})_` : '';
+      msg += `${statusEmoji(t.status)} ${t.task}${timePart}\n`;
+      if(t.notes) msg += `   ↳ ${t.notes}\n`;
+    });
+  });
+
+  const doneCount = tasks.filter(t => t.status === 'Done').length;
+  msg += `\n_${doneCount}/${tasks.length} tasks completed today_`;
+
+  return msg;
+}
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const tasks = collectTasks();
+  const statusMsg = document.getElementById('statusMsg');
+
+  if(tasks.length === 0){
+    statusMsg.textContent = 'Add at least one task before submitting.';
+    statusMsg.style.color = 'var(--danger)';
+    return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  statusMsg.textContent = '';
+
+  const dateStr = new Date().toISOString().split('T')[0];
+  const payload = {
+    date: dateStr,
+    tasks: tasks
+  };
+
+  try{
+    if(SCRIPT_URL && SCRIPT_URL.indexOf('PASTE_YOUR') === -1){
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Apps Script web apps often require no-cors from browser
+        headers: {'Content-Type':'text/plain'},
+        body: JSON.stringify(payload)
+      });
+    }
+    showSummary(tasks);
+  }catch(err){
+    statusMsg.textContent = 'Could not reach Google Sheet — check SCRIPT_URL. Report shown below anyway.';
+    statusMsg.style.color = 'var(--warn)';
+    showSummary(tasks);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = 'Submit Report';
+  }
+});
+
+let currentMessage = '';
+
+function showSummary(tasks){
+  currentMessage = buildWhatsAppMessage(tasks);
+  document.getElementById('whatsappPreview').textContent = currentMessage;
+  document.getElementById('savedSub').textContent = `${tasks.length} task(s) logged · ${todayLabel()}`;
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('summaryView').style.display = 'block';
+}
+
+document.getElementById('sendWaBtn').addEventListener('click', () => {
+  const encoded = encodeURIComponent(currentMessage);
+  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(currentMessage).then(() => {
+    const btn = document.getElementById('copyBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = original, 1500);
+  });
+});
+
+document.getElementById('newReportBtn').addEventListener('click', () => {
+  container.innerHTML = '';
+  rowCount = 0;
+  addRow();
+  document.getElementById('summaryView').style.display = 'none';
+  document.getElementById('formView').style.display = 'block';
+});
+</script>
+</body>
+</html>
