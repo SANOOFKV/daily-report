@@ -232,14 +232,35 @@
     </div>
     <div class="status-msg" id="statusMsg"></div>
 
-    <button type="button" class="btn-ghost" id="weeklyBtn" style="width:100%;margin-top:18px;">📊 View This Week's Summary</button>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;">
+      <button type="button" class="btn-ghost" id="dailyBtn" style="flex:1;min-width:120px;">Today's Summary</button>
+      <button type="button" class="btn-ghost" id="weeklyBtn" style="flex:1;min-width:120px;">This Week's Summary</button>
+      <button type="button" class="btn-ghost" id="monthlyBtn" style="flex:1;min-width:120px;">This Month's Summary</button>
+    </div>
+  </div>
+
+  <!-- DAILY VIEW -->
+  <div id="dailyView" style="display:none;">
+    <div class="summary-card">
+      <div class="summary-header">
+        <div class="check-badge" style="background:var(--ok);">D</div>
+        <h2>Today's Summary</h2>
+      </div>
+      <div class="summary-sub" id="dailySub">Loading...</div>
+      <div id="dailyPreview" style="background:var(--mint);border:1px solid #B7E6D2;border-radius:12px;padding:16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;color:var(--dark-teal);margin-bottom:18px;max-height:400px;overflow-y:auto;"></div>
+      <button class="wa-btn" id="sendDailyWaBtn">Send Today's Report to WhatsApp</button>
+      <div class="secondary-actions">
+        <button class="btn-ghost" id="copyDailyBtn">Copy Text</button>
+        <button class="btn-ghost" id="backFromDailyBtn">← Back</button>
+      </div>
+    </div>
   </div>
 
   <!-- WEEKLY VIEW -->
   <div id="weeklyView" style="display:none;">
     <div class="summary-card">
       <div class="summary-header">
-        <div class="check-badge" style="background:var(--navy);">📊</div>
+        <div class="check-badge" style="background:var(--navy);">W</div>
         <h2>Weekly Summary</h2>
       </div>
       <div class="summary-sub" id="weeklySub">Loading...</div>
@@ -252,11 +273,28 @@
     </div>
   </div>
 
+  <!-- MONTHLY VIEW -->
+  <div id="monthlyView" style="display:none;">
+    <div class="summary-card">
+      <div class="summary-header">
+        <div class="check-badge" style="background:var(--teal);">M</div>
+        <h2>Monthly Summary</h2>
+      </div>
+      <div class="summary-sub" id="monthlySub">Loading...</div>
+      <div id="monthlyPreview" style="background:var(--peach);border:1px solid #F1CFC0;border-radius:12px;padding:16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;color:var(--dark-teal);margin-bottom:18px;max-height:400px;overflow-y:auto;"></div>
+      <button class="wa-btn" id="sendMonthlyWaBtn">Send Monthly Report to WhatsApp</button>
+      <div class="secondary-actions">
+        <button class="btn-ghost" id="copyMonthlyBtn">Copy Text</button>
+        <button class="btn-ghost" id="backFromMonthlyBtn">← Back</button>
+      </div>
+    </div>
+  </div>
+
   <!-- SUMMARY / CONFIRMATION VIEW -->
   <div id="summaryView">
     <div class="summary-card">
       <div class="summary-header">
-        <div class="check-badge">✓</div>
+        <div class="check-badge">S</div>
         <h2>Report Saved</h2>
       </div>
       <div class="summary-sub" id="savedSub">Logged to Google Sheet</div>
@@ -317,7 +355,7 @@ function addRow(prefill){
       <span class="task-num">Task ${id}</span>
       <button type="button" class="remove-btn" onclick="removeRow(${id})">Remove</button>
     </div>
-    <div class="grid3">
+    <div class="grid2">
       <div class="field">
         <label>Category</label>
         <select class="f-category">${catOptions}</select>
@@ -357,7 +395,6 @@ function collectTasks(){
     tasks.push({
       category: row.querySelector('.f-category').value,
       status: row.querySelector('.f-status').value,
-      time: row.querySelector('.f-time').value.trim(),
       task: task,
       notes: row.querySelector('.f-notes').value.trim()
     });
@@ -365,11 +402,11 @@ function collectTasks(){
   return tasks;
 }
 
-function statusEmoji(status){
-  if(status === 'Done') return '✅';
-  if(status === 'In Progress') return '🔄';
-  if(status === 'Blocked') return '⛔';
-  return '•';
+function statusLabel(status){
+  if(status === 'Done') return 'Done';
+  if(status === 'In Progress') return 'In Progress';
+  if(status === 'Cancelled') return 'Cancelled';
+  return status || '-';
 }
 
 function buildWhatsAppMessage(tasks){
@@ -388,9 +425,8 @@ function buildWhatsAppMessage(tasks){
     if(!items || items.length === 0) return;
     msg += `\n${cat.label}\n`;
     items.forEach(t => {
-      const timePart = t.time ? ` _(${t.time})_` : '';
-      msg += `${statusEmoji(t.status)} ${t.task}${timePart}\n`;
-      if(t.notes) msg += `   ↳ ${t.notes}\n`;
+      msg += `- ${t.task} [${statusLabel(t.status)}]\n`;
+      if(t.notes) msg += `   Note: ${t.notes}\n`;
     });
   });
 
@@ -473,6 +509,58 @@ document.getElementById('newReportBtn').addEventListener('click', () => {
   document.getElementById('formView').style.display = 'block';
 });
 
+/* ===================== DAILY SUMMARY ===================== */
+let currentDailyMessage = '';
+
+document.getElementById('dailyBtn').addEventListener('click', async () => {
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('dailyView').style.display = 'block';
+  const sub = document.getElementById('dailySub');
+  const preview = document.getElementById('dailyPreview');
+  sub.textContent = 'Loading...';
+  preview.textContent = '';
+
+  if(!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') !== -1){
+    sub.textContent = 'SCRIPT_URL not set yet.';
+    return;
+  }
+
+  try{
+    const res = await fetch(`${SCRIPT_URL}?action=daily`);
+    const data = await res.json();
+    if(data.status === 'success' && data.text){
+      currentDailyMessage = data.text;
+      preview.textContent = data.text;
+      sub.textContent = data.total ? `${data.done}/${data.total} tasks completed today` : 'No tasks logged today yet';
+    }else{
+      sub.textContent = 'Could not load summary.';
+    }
+  }catch(err){
+    sub.textContent = 'Error fetching daily summary — check SCRIPT_URL / deployment access.';
+  }
+});
+
+document.getElementById('sendDailyWaBtn').addEventListener('click', () => {
+  if(!currentDailyMessage) return;
+  const encoded = encodeURIComponent(currentDailyMessage);
+  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+});
+
+document.getElementById('copyDailyBtn').addEventListener('click', () => {
+  if(!currentDailyMessage) return;
+  navigator.clipboard.writeText(currentDailyMessage).then(() => {
+    const btn = document.getElementById('copyDailyBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = original, 1500);
+  });
+});
+
+document.getElementById('backFromDailyBtn').addEventListener('click', () => {
+  document.getElementById('dailyView').style.display = 'none';
+  document.getElementById('formView').style.display = 'block';
+});
+
 /* ===================== WEEKLY SUMMARY ===================== */
 let currentWeeklyMessage = '';
 
@@ -522,6 +610,58 @@ document.getElementById('copyWeeklyBtn').addEventListener('click', () => {
 
 document.getElementById('backFromWeeklyBtn').addEventListener('click', () => {
   document.getElementById('weeklyView').style.display = 'none';
+  document.getElementById('formView').style.display = 'block';
+});
+
+/* ===================== MONTHLY SUMMARY ===================== */
+let currentMonthlyMessage = '';
+
+document.getElementById('monthlyBtn').addEventListener('click', async () => {
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('monthlyView').style.display = 'block';
+  const sub = document.getElementById('monthlySub');
+  const preview = document.getElementById('monthlyPreview');
+  sub.textContent = 'Loading...';
+  preview.textContent = '';
+
+  if(!SCRIPT_URL || SCRIPT_URL.indexOf('PASTE_YOUR') !== -1){
+    sub.textContent = 'SCRIPT_URL not set yet.';
+    return;
+  }
+
+  try{
+    const res = await fetch(`${SCRIPT_URL}?action=monthly`);
+    const data = await res.json();
+    if(data.status === 'success' && data.text){
+      currentMonthlyMessage = data.text;
+      preview.textContent = data.text;
+      sub.textContent = data.total ? `${data.done}/${data.total} tasks completed this month` : 'No tasks logged this month yet';
+    }else{
+      sub.textContent = 'Could not load summary.';
+    }
+  }catch(err){
+    sub.textContent = 'Error fetching monthly summary — check SCRIPT_URL / deployment access.';
+  }
+});
+
+document.getElementById('sendMonthlyWaBtn').addEventListener('click', () => {
+  if(!currentMonthlyMessage) return;
+  const encoded = encodeURIComponent(currentMonthlyMessage);
+  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+});
+
+document.getElementById('copyMonthlyBtn').addEventListener('click', () => {
+  if(!currentMonthlyMessage) return;
+  navigator.clipboard.writeText(currentMonthlyMessage).then(() => {
+    const btn = document.getElementById('copyMonthlyBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = original, 1500);
+  });
+});
+
+document.getElementById('backFromMonthlyBtn').addEventListener('click', () => {
+  document.getElementById('monthlyView').style.display = 'none';
   document.getElementById('formView').style.display = 'block';
 });
 </script>
